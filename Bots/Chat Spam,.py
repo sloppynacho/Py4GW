@@ -33,8 +33,13 @@ def main():
         window_flags = PyImGui.WindowFlags.AlwaysAutoResize
         if PyImGui.begin("Chat Spam", window_flags):
             message_text = PyImGui.input_text("Message", message_text)
+            # Truncate message to 120 characters as Guild Wars chat has a
+            # maximum length of 120 characters.
+            if len(message_text) > 120:
+                message_text = message_text[:120]
             channel = PyImGui.input_text("Channel", channel)
-            running = ImGui.toggle_button("Start", running)
+            button_label = "Stop" if running else "Start"
+            running = ImGui.toggle_button(button_label, running)
         PyImGui.end()
     except Exception as e:
         Py4GW.Console.Log(MODULE_NAME, f"Error: {str(e)}", Py4GW.Console.MessageType.Error)
