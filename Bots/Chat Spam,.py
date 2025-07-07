@@ -37,6 +37,10 @@ def main():
             # maximum length of 120 characters.
             if len(message_text) > 120:
                 message_text = message_text[:120]
+<<<<<<< HEAD
+=======
+            
+>>>>>>> 632bf2d (Enhance Chat Spam GUI)
             channel = PyImGui.input_text("Channel", channel)
             button_label = "Stop" if running else "Start"
             running = ImGui.toggle_button(button_label, running)
