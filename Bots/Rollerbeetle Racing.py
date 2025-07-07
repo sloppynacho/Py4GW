@@ -476,50 +476,43 @@ def UseSkills():
     player_id = Player.GetAgentID()
     player_x, player_y = Agent.GetXY(player_id)
 
-    skill_1_data = SkillBar.GetSkillData(1)
-    skill_2_data = SkillBar.GetSkillData(2)
-    skill_3_data = SkillBar.GetSkillData(3)
-    skill_4_data = SkillBar.GetSkillData(4)
-    skill_5_data = SkillBar.GetSkillData(5)
-    skill_6_data = SkillBar.GetSkillData(6)
-    skill_7_data = SkillBar.GetSkillData(7)
-    skill_8_data = SkillBar.GetSkillData(8)
+    skills = [SkillBar.GetSkillData(i) for i in range(1, 9)]
 
     # Try to double up Super Rollerbeetle if possible
-    if (skill_6_data.recharge == 0 or DoesPlayerHaveEffect(SKILL_ROLLERBEETLE_ECHO)) and skill_8_data.recharge == 0:
+    if (skills[5].recharge == 0 or DoesPlayerHaveEffect(SKILL_ROLLERBEETLE_ECHO)) and skills[7].recharge == 0:
         SkillBar.UseSkill(6)
         SkillBar.UseSkill(8)
         return
     
     # Try to double up Rollerbeetle Dash if possible
-    if (skill_6_data.recharge == 0 or DoesPlayerHaveEffect(SKILL_ROLLERBEETLE_ECHO)) and skill_1_data.recharge == 0:
+    if (skills[5].recharge == 0 or DoesPlayerHaveEffect(SKILL_ROLLERBEETLE_ECHO)) and skills[0].recharge == 0:
         SkillBar.UseSkill(6)
         SkillBar.UseSkill(1)
         return
 
     # Always use Super Rollerbeetle
     if not DoesPlayerHaveEffect(SKILL_SUPER_ROLLERBEETLE):
-        if skill_8_data.recharge == 0 or (skill_6_data.id == SKILL_SUPER_ROLLERBEETLE and skill_6_data.recharge == 0):
-            if skill_8_data.recharge == 0:
+        if skills[7].recharge == 0 or (skills[5].id == SKILL_SUPER_ROLLERBEETLE and skills[5].recharge == 0):
+            if skills[7].recharge == 0:
                 SkillBar.UseSkill(8)
-            elif skill_6_data.recharge == 0:
+            elif skills[5].recharge == 0:
                 SkillBar.UseSkill(6)
             return
 
     # Always use ram
     if not DoesPlayerHaveEffect(SKILL_SUPER_ROLLERBEETLE) and not DoesPlayerHaveEffect(SKILL_RAM):
-        if skill_3_data.recharge == 0:
+        if skills[2].recharge == 0:
             SkillBar.UseSkill(3)
             return
 
     # Always use harden shell
     if not DoesPlayerHaveEffect(SKILL_HARDEN_SHELL):
-        if skill_2_data.recharge == 0:
+        if skills[1].recharge == 0:
             SkillBar.UseSkill(2)
             return
 
     # Always use rollerbeetle dash
-    if not DoesPlayerHaveEffect(SKILL_SUPER_ROLLERBEETLE) and not DoesPlayerHaveEffect(SKILL_ROLLERBEETLE_DASH) and not DoesPlayerHaveEffect(SKILL_RAM) and skill_1_data.recharge == 0:
+    if not DoesPlayerHaveEffect(SKILL_SUPER_ROLLERBEETLE) and not DoesPlayerHaveEffect(SKILL_ROLLERBEETLE_DASH) and not DoesPlayerHaveEffect(SKILL_RAM) and skills[0].recharge == 0:
         SkillBar.UseSkill(1)
         return
 
@@ -540,17 +533,17 @@ def UseSkills():
                 bot_vars.current_target = target_id
 
             # Use skill slot 4 if available
-            if skill_4_data.recharge == 0:
+            if skills[3].recharge == 0:
                 SkillBar.UseSkill(4, target_id)
                 return
 
             # Use skill slot 5 if available
-            if skill_5_data.recharge == 0:
+            if skills[4].recharge == 0:
                 SkillBar.UseSkill(5, target_id)
                 return
 
             # Use skill slot 7 if available
-            if skill_7_data.recharge == 0:
+            if skills[6].recharge == 0:
                 SkillBar.UseSkill(7, target_id)
                 return
 
