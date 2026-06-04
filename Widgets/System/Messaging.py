@@ -2768,7 +2768,7 @@ def ProcessMessages():
         case SharedCommandType.SendDialog:
             GLOBAL_CACHE.Coroutines.append(SendDialog(index, message))
         case SharedCommandType.GetBlessing:
-            pass
+            GLOBAL_CACHE.Coroutines.append(GetBlessing(index, message))
         case SharedCommandType.OpenChest:
             GLOBAL_CACHE.Coroutines.append(OpenChest(index, message))
             pass
