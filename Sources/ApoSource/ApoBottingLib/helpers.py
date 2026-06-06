@@ -317,6 +317,84 @@ def _send_multibox_get_blessing_with_target(
     )
 
 
+def _send_multibox_interact_with_target(
+    *,
+    target_blackboard_key: str = _MULTIBOX_DIALOG_TARGET_KEY,
+    alt_delay_ms: int = 2000,
+    timeout_ms: int = 30000,
+    poll_interval_ms: int = 100,
+    log: bool = False,
+) -> BehaviorTree:
+    
+    from Py4GWCoreLib.GlobalCache import GLOBAL_CACHE
+    from Py4GWCoreLib.Player import Player
+
+    alt_delay_ms = max(0, int(alt_delay_ms))
+
+    def _build(node: BehaviorTree.Node) -> BehaviorTree:
+        target_id = int(node.blackboard.get(target_blackboard_key, 0) or 0)
+        sender_email = str(Player.GetAccountEmail() or '')
+
+        children: list[BehaviorTree | BehaviorTree.Node] = []
+        if target_id > 0:
+            for idx, account in enumerate(GLOBAL_CACHE.ShMem.GetAllAccountData() or []):
+                receiver_email = str(getattr(account, 'AccountEmail', '') or '')
+                if not receiver_email or receiver_email == sender_email:
+                    continue
+
+                alt_step = RoutinesBT.Composite.Sequence(
+                    RoutinesBT.Player.Wait(duration_ms=alt_delay_ms, log=log),
+                    RoutinesBT.Shared.SendAndWait(
+                        command=SharedCommandType.InteractWithTarget,
+                        params=(float(target_id), 0.0, 0.0, 0.0),
+                        recipients=[receiver_email],
+                        timeout_ms=timeout_ms,
+                        poll_interval_ms=poll_interval_ms,
+                        log=log,
+                    ),
+                    name=f'MultiboxInteractAltStep_{idx}',
+                )
+
+                # A single slow/stuck alt must not abort the remaining accounts. The fallback
+                # logs (and then succeeds) so a swallowed account is visible rather than silent.
+                children.append(
+                    BehaviorTree(
+                        BehaviorTree.SelectorNode(
+                            name=f'MultiboxInteractAltGuard_{idx}',
+                            children=[
+                                alt_step,
+                                RoutinesBT.Player.LogMessage(
+                                    source='ApoBottingLib',
+                                    to_console=True,
+                                    to_blackboard=False,
+                                    message=(
+                                        f'MoveAndInteractWithGadget multibox: alt account {receiver_email} '
+                                        f'did not finish interacting within {timeout_ms} ms; skipping it.'
+                                    ),
+                                ),
+                            ],
+                        )
+                    )
+                )
+
+        if not children:
+            children.append(
+                BehaviorTree(BehaviorTree.SucceederNode(name='MultiboxInteractNoAltAccounts'))
+            )
+
+        return RoutinesBT.Composite.Sequence(
+            *children,
+            name='MultiboxInteractWithTargetSequence',
+        )
+
+    return BehaviorTree(
+        BehaviorTree.SubtreeNode(
+            name='SendMultiboxInteractWithTarget',
+            subtree_fn=_build,
+        )
+    )
+
+
 def _final_point(pos: PointOrPath) -> Vec2f:
     point = PointPath.final_point(pos)
     if point is None:
