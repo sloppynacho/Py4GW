@@ -1,6 +1,6 @@
 import importlib
 
-from Py4GWCoreLib.enums_src.GameData_enums import Range
+from Py4GWCoreLib.enums_src.GameData_enums import Allegiance, Range
 
 class _RProxy:
     def __getattr__(self, name: str):
@@ -187,8 +187,10 @@ class Agents:
         """
         from ..GlobalCache import GLOBAL_CACHE
         enemy_array = AgentArray.GetEnemyArray()
+        enemy_array = AgentArray.Filter.ByCondition(enemy_array, lambda agent_id: Agent.IsValid(agent_id))
         enemy_array = AgentArray.Filter.ByCondition(enemy_array, lambda agent_id: Utils.Distance((x,y), Agent.GetXY(agent_id)) <= max_distance)
         enemy_array = AgentArray.Filter.ByCondition(enemy_array, lambda agent_id: Agent.IsAlive(agent_id))
+        enemy_array = AgentArray.Filter.ByCondition(enemy_array, lambda agent_id: Agent.GetAllegiance(agent_id)[0] == Allegiance.Enemy)
         enemy_array = AgentArray.Filter.ByCondition(enemy_array, lambda agent_id: Player.GetAgentID() != agent_id)
         if aggressive_only:
             enemy_array = AgentArray.Filter.ByCondition(enemy_array, lambda agent_id: Agent.IsAggressive(agent_id))
