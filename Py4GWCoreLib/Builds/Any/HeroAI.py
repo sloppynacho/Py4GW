@@ -161,12 +161,6 @@ class HeroAI_Build(BuildMgr):
 
         contract_build.ResetTickState()
         if is_in_combat:
-            # Matched-build contracts bypass CombatClass.HandleCombat, which is the
-            # only place the leader's selected target gets auto-called to the party.
-            # Run the call hook here so leader target-calling works regardless of
-            # which build drives combat (leader-only + once-per-target gates live
-            # inside MaybeCallCombatTarget).
-            cached_data.combat_handler._maybe_call_leader_selected_target(cached_data)
             yield from contract_build.ProcessCombat()
         else:
             yield from contract_build.ProcessOOC()
