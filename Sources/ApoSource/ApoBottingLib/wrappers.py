@@ -11,7 +11,7 @@ from .helpers import _pause_heroai_for_action
 from .helpers import _POST_MOVEMENT_SETTLE_MS
 from .helpers import _send_multibox_auto_dialog
 from .helpers import _send_multibox_get_blessing_with_target
-from .helpers import _send_multibox_interact_with_target
+from .helpers import _broadcast_gadget_interact_with_lock
 from .helpers import _send_multibox_dialog_to_target
 from .helpers import _send_multibox_manual_dialog
 from .helpers import _send_multibox_take_dialog_with_target
@@ -701,13 +701,15 @@ def TargetNearestGadgetAndInteract(
 ) -> BehaviorTree:
     point = _final_point(pos)
     if multi_account:
+        # Broadcast-once + per-gadget EXCLUSIVE whiteboard lock. Every in-group same-map
+        # account INCLUDING self runs the same lock-gated follower handler; the leader is
+        # just another peer, so there is no leader-side interact and no double-interact.
         return _pause_heroai_for_action(
-            RoutinesBT.Composite.Sequence(
-                RoutinesBT.Agents.TargetNearestGadgetXY(x=point.x, y=point.y, distance=target_distance, log=log),
-                RoutinesBT.Player.InteractTarget(log=log),
-                _capture_current_target(),
-                _send_multibox_interact_with_target(log=log),
-                name="TargetNearestGadgetAndInteractMultiboxSequence",
+            _broadcast_gadget_interact_with_lock(
+                x=point.x,
+                y=point.y,
+                distance=target_distance,
+                log=log,
             )
         )
     return _pause_heroai_for_action(
